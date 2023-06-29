@@ -91,6 +91,22 @@ extension TaskListViewController {
     }
 }
 
+// MARK: - UITableViewDelegate
+extension TaskListViewController {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let deletedTask = taskList.remove(at: indexPath.row)
+            viewContext.delete(deletedTask)
+            viewContext.delete(deletedTask)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+    }
+}
+
 // MARK: - Setup UI
 private extension TaskListViewController {
     func setupNavigationBar() {

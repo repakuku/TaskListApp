@@ -41,13 +41,7 @@ final class TaskListViewController: UITableViewController {
             with: .automatic
         )
         
-        if viewContext.hasChanges {
-            do {
-                try viewContext.save()
-            } catch {
-                print(error)
-            }
-        }
+        storageManager.saveContext()
     
         dismiss(animated: true)
     }
@@ -101,7 +95,7 @@ extension TaskListViewController {
         if editingStyle == .delete {
             let deletedTask = taskList.remove(at: indexPath.row)
             viewContext.delete(deletedTask)
-            viewContext.delete(deletedTask)
+            storageManager.saveContext()
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }

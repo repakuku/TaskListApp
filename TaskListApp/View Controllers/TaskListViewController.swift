@@ -6,15 +6,14 @@
 //
 
 import UIKit
-import CoreData
-
 
 final class TaskListViewController: UITableViewController {
     
+    private let storageManager = StorageManager.shared
+    private let viewContext = StorageManager.shared.persistentContainer.viewContext
+    
     private let cellID = "task"
     private var taskList: [Task] = []
-    
-    private let viewContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,23 +23,11 @@ final class TaskListViewController: UITableViewController {
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
         
-        fetchData()
+        taskList = storageManager.fetchData()
     }
     
- 
-
     @objc private func addNewTask() {
         showAlert(withTitle: "New Task", andMessage: "What would you like to do?")
-    }
-    
-    private func fetchData() {
-        let fetchRequest = Task.fetchRequest()
-        
-        do {
-           taskList = try viewContext.fetch(fetchRequest)
-        } catch {
-            
-        }
     }
     
     private func save(_ taskName: String) {

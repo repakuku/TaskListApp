@@ -46,12 +46,31 @@ final class TaskListViewController: UITableViewController {
         dismiss(animated: true)
     }
     
-    private func showAlert(withTitle title: String, andMessage message: String) {
+    private func update(_ taskName: String, at index: Int) {
+        taskList[index].title = taskName
+        
+        tableView.reloadData()
+        
+        storageManager.saveContext()
+    
+        dismiss(animated: true)
+    }
+    
+    private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt index: Int? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        let saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
-            guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-            save(taskName)
+        var saveAction: UIAlertAction!
+        
+        if let index {
+            saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
+                guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
+                update(taskName, at: index)
+            }
+        } else {
+            saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
+                guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
+                save(taskName)
+            }
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
@@ -61,6 +80,10 @@ final class TaskListViewController: UITableViewController {
         
         alert.addTextField { textField in
             textField.placeholder = "New Task"
+        }
+        
+        if let index {
+            alert.textFields?.first?.text = taskList[index].title
         }
         
         present(alert, animated: true)
@@ -88,7 +111,7 @@ extension TaskListViewController {
 // MARK: - UITableViewDelegate
 extension TaskListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+        showAlert(withTitle: "Update Task", andMessage: "What yo want to do?", forSelectedTaskAt: indexPath.row)
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -121,6 +144,9 @@ private extension TaskListViewController {
             target: self,
             action: #selector(addNewTask)
         )
+        
+        navigationItem.leftBarButtonItem = editButtonItem
+        
         navigationController?.navigationBar.tintColor = .white
     }
 }

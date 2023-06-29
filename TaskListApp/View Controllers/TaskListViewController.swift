@@ -52,8 +52,16 @@ final class TaskListViewController: UITableViewController {
         tableView.reloadData()
         
         storageManager.saveContext()
-    
+        
         dismiss(animated: true)
+    }
+    
+    private func move(at sourceIndex: Int, to destinationIndex: Int) {
+        let tempTaskTitle = taskList[sourceIndex].title
+        taskList[sourceIndex].title = taskList[destinationIndex].title
+        taskList[destinationIndex].title = tempTaskTitle
+        
+        storageManager.saveContext()
     }
     
     private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt index: Int? = nil) {
@@ -88,7 +96,6 @@ final class TaskListViewController: UITableViewController {
         
         present(alert, animated: true)
     }
-
 }
 
 // MARK: - UITableViewDataSource
@@ -122,6 +129,14 @@ extension TaskListViewController {
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
+    
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        true
+    }
+    
+    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        move(at: sourceIndexPath.row, to: destinationIndexPath.row)
+    }
 }
 
 // MARK: - Setup UI
@@ -139,14 +154,13 @@ private extension TaskListViewController {
         navigationController?.navigationBar.standardAppearance = navBarAppearance
         navigationController?.navigationBar.scrollEdgeAppearance = navBarAppearance
         
+        navigationItem.leftBarButtonItem = editButtonItem
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
             action: #selector(addNewTask)
         )
-        
-        navigationItem.leftBarButtonItem = editButtonItem
-        
+
         navigationController?.navigationBar.tintColor = .white
     }
 }

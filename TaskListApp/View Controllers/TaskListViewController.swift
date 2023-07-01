@@ -10,7 +10,6 @@ import UIKit
 final class TaskListViewController: UITableViewController {
     
     private let storageManager = StorageManager.shared
-    private let viewContext = StorageManager.shared.persistentContainer.viewContext
     
     private let cellID = "task"
     private var taskList: [Task] = []
@@ -23,45 +22,45 @@ final class TaskListViewController: UITableViewController {
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
         
-        taskList = storageManager.fetchData()
+        fetchTaskList()
     }
     
     @objc private func addNewTask() {
         showAlert(withTitle: "New Task", andMessage: "What would you like to do?")
     }
     
+    private func fetchTaskList() {
+        taskList = storageManager.fetchData()
+    }
+    
     private func save(_ taskName: String) {
-        let task = Task(context: viewContext)
-        task.title = taskName
-        
-        taskList.append(task)
+        storageManager.save(taskName)
+        fetchTaskList()
         
         tableView.insertRows(
             at: [IndexPath(row: taskList.count - 1, section: 0)],
             with: .automatic
         )
-        
-        storageManager.saveContext()
     
         dismiss(animated: true)
     }
     
     private func update(_ taskName: String, at index: Int) {
-        taskList[index].title = taskName
+        storageManager.update(taskName, at: index)
         
         tableView.reloadData()
-        
-        storageManager.saveContext()
         
         dismiss(animated: true)
     }
     
-    private func move(at sourceIndex: Int, to destinationIndex: Int) {
-        let tempTaskTitle = taskList[sourceIndex].title
-        taskList[sourceIndex].title = taskList[destinationIndex].title
-        taskList[destinationIndex].title = tempTaskTitle
+    private func delete(at indexPath: IndexPath) {
+        storageManager.delete(at: indexPath.row)
+        fetchTaskList()
         
-        storageManager.saveContext()
+        tableView.deleteRows(
+            at: [indexPath],
+            with: .automatic
+        )
     }
     
     private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt index: Int? = nil) {
@@ -123,19 +122,12 @@ extension TaskListViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let deletedTask = taskList.remove(at: indexPath.row)
-            viewContext.delete(deletedTask)
-            storageManager.saveContext()
-            tableView.deleteRows(at: [indexPath], with: .automatic)
+            delete(at: indexPath)
         }
     }
     
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        true
-    }
-    
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        move(at: sourceIndexPath.row, to: destinationIndexPath.row)
+        storageManager.move(at: sourceIndexPath.row, to: destinationIndexPath.row)
     }
 }
 

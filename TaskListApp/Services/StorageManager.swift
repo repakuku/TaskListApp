@@ -38,38 +38,36 @@ final class StorageManager {
         }
     }
     
-    func fetchData() -> [Task] {
+    func fetchData(_ completion: (Result<[Task], Error>) -> Void) {
         let fetchRequest = Task.fetchRequest()
         var taskList: [Task] = []
         
         do {
             taskList = try context.fetch(fetchRequest)
+            completion(.success(taskList))
         } catch {
-            print(error)
+            completion(.failure(error))
         }
-        
-        return taskList
     }
     
-    func save(_ taskName: String) {
-        var taskList = fetchData()
+    func save(_ taskName: String, _ completion: (Task) -> Void) {
         let task = Task(context: context)
         task.title = taskName
-        taskList.append(task)
         saveContext()
+        completion(task)
     }
     
-    func update(_ taskName: String, at index: Int) {
-        let taskList = fetchData()
-        taskList[index].title = taskName
-        saveContext()
-    }
+//    func update(_ taskName: String, at index: Int) {
+//        let taskList = fetchData()
+//        taskList[index].title = taskName
+//        saveContext()
+//    }
     
-    func delete(at index: Int) {
-        var taskList = fetchData()
-        let deletedTask = taskList.remove(at: index)
-        context.delete(deletedTask)
-        saveContext()
-    }
+//    func delete(at index: Int) {
+//        var taskList = fetchData()
+//        let deletedTask = taskList.remove(at: index)
+//        context.delete(deletedTask)
+//        saveContext()
+//    }
     
 }

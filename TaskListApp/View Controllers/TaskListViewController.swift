@@ -30,11 +30,21 @@ final class TaskListViewController: UITableViewController {
     }
     
     private func fetchTaskList() {
-        taskList = storageManager.fetchData()
+        storageManager.fetchData { result in
+            switch result {
+            case .success(let value):
+                taskList = value
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
     
     private func save(_ taskName: String) {
-        storageManager.save(taskName)
+        storageManager.save(taskName) { task in
+            taskList.append(task)
+        }
+        
         fetchTaskList()
         
         tableView.insertRows(
@@ -45,23 +55,23 @@ final class TaskListViewController: UITableViewController {
         dismiss(animated: true)
     }
     
-    private func update(_ taskName: String, at index: Int) {
-        storageManager.update(taskName, at: index)
-        
-        tableView.reloadData()
-        
-        dismiss(animated: true)
-    }
+//    private func update(_ taskName: String, at index: Int) {
+//        storageManager.update(taskName, at: index)
+//
+//        tableView.reloadData()
+//
+//        dismiss(animated: true)
+//    }
     
-    private func delete(at indexPath: IndexPath) {
-        storageManager.delete(at: indexPath.row)
-        fetchTaskList()
-        
-        tableView.deleteRows(
-            at: [indexPath],
-            with: .automatic
-        )
-    }
+//    private func delete(at indexPath: IndexPath) {
+//        storageManager.delete(at: indexPath.row)
+//        fetchTaskList()
+//
+//        tableView.deleteRows(
+//            at: [indexPath],
+//            with: .automatic
+//        )
+//    }
     
     private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt index: Int? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -71,7 +81,7 @@ final class TaskListViewController: UITableViewController {
         if let index {
             saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
                 guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-                update(taskName, at: index)
+//                update(taskName, at: index)
             }
         } else {
             saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
@@ -122,7 +132,7 @@ extension TaskListViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            delete(at: indexPath)
+//            delete(at: indexPath)
         }
     }
 }

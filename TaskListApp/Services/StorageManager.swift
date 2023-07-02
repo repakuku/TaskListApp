@@ -62,14 +62,6 @@ final class StorageManager {
         saveContext()
     }
     
-    func move(at sourceIndex: Int, to destinationIndex: Int) {
-        let taskList = fetchData()
-        let tempTaskTitle = taskList[sourceIndex].title
-        taskList[sourceIndex].title = taskList[destinationIndex].title
-        taskList[destinationIndex].title = tempTaskTitle
-        saveContext()
-    }
-    
     func delete(at index: Int) {
         var taskList = fetchData()
         let deletedTask = taskList.remove(at: index)

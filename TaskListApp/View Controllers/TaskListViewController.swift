@@ -45,43 +45,42 @@ final class TaskListViewController: UITableViewController {
             taskList.append(task)
         }
         
-        fetchTaskList()
-        
         tableView.insertRows(
             at: [IndexPath(row: taskList.count - 1, section: 0)],
             with: .automatic
         )
-    
-        dismiss(animated: true)
     }
     
-//    private func update(_ taskName: String, at index: Int) {
-//        storageManager.update(taskName, at: index)
-//
-//        tableView.reloadData()
-//
-//        dismiss(animated: true)
-//    }
+    private func update(_ task: Task, with title: String, at indexPath: IndexPath) {
+        storageManager.update(task, with: title)
+
+        tableView.reloadRows(
+            at: [indexPath],
+            with: .automatic
+        )
+    }
     
-//    private func delete(at indexPath: IndexPath) {
-//        storageManager.delete(at: indexPath.row)
-//        fetchTaskList()
-//
-//        tableView.deleteRows(
-//            at: [indexPath],
-//            with: .automatic
-//        )
-//    }
+    private func delete(_ task: Task, at indexPath: IndexPath) {
+        storageManager.delete(task)
+
+        taskList.remove(at: indexPath.row)
+        
+        tableView.deleteRows(
+            at: [indexPath],
+            with: .automatic
+        )
+    }
     
-    private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt index: Int? = nil) {
+    private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt indexPath: IndexPath? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
         var saveAction: UIAlertAction!
         
-        if let index {
+        if let indexPath {
             saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
                 guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-//                update(taskName, at: index)
+                let task = taskList[indexPath.row]
+                update(task, with: taskName, at: indexPath)
             }
         } else {
             saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
@@ -99,8 +98,8 @@ final class TaskListViewController: UITableViewController {
             textField.placeholder = "New Task"
         }
         
-        if let index {
-            alert.textFields?.first?.text = taskList[index].title
+        if let indexPath {
+            alert.textFields?.first?.text = taskList[indexPath.row].title
         }
         
         present(alert, animated: true)
@@ -127,12 +126,13 @@ extension TaskListViewController {
 // MARK: - UITableViewDelegate
 extension TaskListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        showAlert(withTitle: "Update Task", andMessage: "What yo want to do?", forSelectedTaskAt: indexPath.row)
+        showAlert(withTitle: "Update Task", andMessage: "What yo want to do?", forSelectedTaskAt: indexPath)
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-//            delete(at: indexPath)
+            let task = taskList[indexPath.row]
+            delete(task, at: indexPath)
         }
     }
 }

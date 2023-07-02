@@ -73,20 +73,20 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		0762FECB2A4E2430002DF0AB /* Storage */ = {
-			isa = PBXGroup;
-			children = (
-				519467F42A4DF1AF00060568 /* TaskListApp.xcdatamodeld */,
-			);
-			path = Storage;
-			sourceTree = "<group>";
-		};
 		0762FECC2A4E2438002DF0AB /* Services */ = {
 			isa = PBXGroup;
 			children = (
 				0762FECD2A4E2445002DF0AB /* StorageManager.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		0762FECF2A52039F002DF0AB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				519467F42A4DF1AF00060568 /* TaskListApp.xcdatamodeld */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		519467DF2A4DF1AF00060568 = {
@@ -108,12 +108,12 @@
 		519467EA2A4DF1AF00060568 /* TaskListApp */ = {
 			isa = PBXGroup;
 			children = (
+				0762FECF2A52039F002DF0AB /* Models */,
 				0762FECC2A4E2438002DF0AB /* Services */,
 				0762FEC72A4E23E9002DF0AB /* App */,
 				0762FEC82A4E2412002DF0AB /* View Controllers */,
 				0762FECA2A4E2423002DF0AB /* Resources */,
 				0762FEC92A4E241B002DF0AB /* Storyboards */,
-				0762FECB2A4E2430002DF0AB /* Storage */,
 			);
 			path = TaskListApp;
 			sourceTree = "<group>";

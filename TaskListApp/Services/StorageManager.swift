@@ -22,10 +22,13 @@ final class StorageManager {
         return container
     }()
     
-    private init() {}
+    let context: NSManagedObjectContext
+    
+    private init() {
+        context = persistentContainer.viewContext
+    }
     
     func saveContext() {
-        let context = persistentContainer.viewContext
         if context.hasChanges {
             do {
                 try context.save()
@@ -40,7 +43,7 @@ final class StorageManager {
         var taskList: [Task] = []
         
         do {
-            taskList = try persistentContainer.viewContext.fetch(fetchRequest)
+            taskList = try context.fetch(fetchRequest)
         } catch {
             print(error)
         }
@@ -50,7 +53,7 @@ final class StorageManager {
     
     func save(_ taskName: String) {
         var taskList = fetchData()
-        let task = Task(context: persistentContainer.viewContext)
+        let task = Task(context: context)
         task.title = taskName
         taskList.append(task)
         saveContext()
@@ -65,7 +68,7 @@ final class StorageManager {
     func delete(at index: Int) {
         var taskList = fetchData()
         let deletedTask = taskList.remove(at: index)
-        persistentContainer.viewContext.delete(deletedTask)
+        context.delete(deletedTask)
         saveContext()
     }
     

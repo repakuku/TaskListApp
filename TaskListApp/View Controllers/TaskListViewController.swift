@@ -107,7 +107,8 @@ extension TaskListViewController {
     }
     
     override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        storageManager.move(taskList[sourceIndexPath.row], from: sourceIndexPath.row, to: destinationIndexPath.row)
+        let task = taskList[sourceIndexPath.row]
+        storageManager.move(task, from: sourceIndexPath.row, to: destinationIndexPath.row, in: taskList)
     }
 }
 

@@ -5,24 +5,23 @@
 //  Created by Алексей Турулин on 6/29/23.
 //
 
-import Foundation
 import CoreData
 
 final class StorageManager {
     static let shared = StorageManager()
     
-    var persistentContainer: NSPersistentContainer = {
+    private let persistentContainer: NSPersistentContainer = {
     
         let container = NSPersistentContainer(name: "TaskListApp")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
-        })
+        }
         return container
     }()
     
-    let context: NSManagedObjectContext
+    private let context: NSManagedObjectContext
     
     private init() {
         context = persistentContainer.viewContext
@@ -40,21 +39,23 @@ final class StorageManager {
     
     func fetchData(_ completion: (Result<[Task], Error>) -> Void) {
         let fetchRequest = Task.fetchRequest()
-        var taskList: [Task] = []
+        let sortDescriptor = NSSortDescriptor(key: "index", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
         
         do {
-            taskList = try context.fetch(fetchRequest)
+            let taskList = try context.fetch(fetchRequest)
             completion(.success(taskList))
         } catch {
             completion(.failure(error))
         }
     }
     
-    func save(_ taskName: String, _ completion: (Task) -> Void) {
+    func save(_ taskName: String, at index: Int, _ completion: (Task) -> Void) {
         let task = Task(context: context)
         task.title = taskName
-        saveContext()
+        task.index = Int64(index)
         completion(task)
+        saveContext()
     }
     
     func update(_ task: Task, with title: String) {

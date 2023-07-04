@@ -26,7 +26,7 @@ final class TaskListViewController: UITableViewController {
     }
     
     @objc private func addNewTask() {
-        showAlert(withTitle: "New Task", andMessage: "What would you like to do?")
+        showAlert()
     }
     
     private func fetchTaskList() {
@@ -40,8 +40,8 @@ final class TaskListViewController: UITableViewController {
         }
     }
     
-    private func save(_ taskName: String) {
-        storageManager.save(taskName) { task in
+    private func save(_ taskName: String, at index: Int) {
+        storageManager.save(taskName, at: index) { task in
             taskList.append(task)
         }
         
@@ -51,11 +51,12 @@ final class TaskListViewController: UITableViewController {
         )
     }
     
-    private func update(_ task: Task, with title: String, at indexPath: IndexPath) {
+    private func update(_ task: Task, with title: String) {
         storageManager.update(task, with: title)
+        let index = Int(task.index)
 
         tableView.reloadRows(
-            at: [indexPath],
+            at: [IndexPath(row: index, section: 0)],
             with: .automatic
         )
     }
@@ -71,22 +72,35 @@ final class TaskListViewController: UITableViewController {
         )
     }
     
-    private func showAlert(withTitle title: String, andMessage message: String, forSelectedTaskAt indexPath: IndexPath? = nil) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    private func showAlert(for task: Task? = nil) {
+        let alert: UIAlertController!
+        let saveAction: UIAlertAction!
         
-        var saveAction: UIAlertAction!
-        
-        if let indexPath {
-            saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
-                guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-                let task = taskList[indexPath.row]
-                update(task, with: taskName, at: indexPath)
-            }
-        } else {
+        guard let task else {
+            alert = UIAlertController(title: "Create Task", message: "What would you like to do?", preferredStyle: .alert)
             saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
                 guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-                save(taskName)
+                save(taskName, at: taskList.count)
             }
+            
+            let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
+            
+            alert.addAction(saveAction)
+            alert.addAction(cancelAction)
+            
+            alert.addTextField { textField in
+                textField.placeholder = "New Task"
+            }
+            
+            present(alert, animated: true)
+            
+            return
+        }
+        
+        alert = UIAlertController(title: "Edit Task", message: "What do you want to do?", preferredStyle: .alert)
+        saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
+            guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
+            update(task, with: taskName)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
@@ -95,11 +109,7 @@ final class TaskListViewController: UITableViewController {
         alert.addAction(cancelAction)
         
         alert.addTextField { textField in
-            textField.placeholder = "New Task"
-        }
-        
-        if let indexPath {
-            alert.textFields?.first?.text = taskList[indexPath.row].title
+            textField.text = task.title
         }
         
         present(alert, animated: true)
@@ -126,7 +136,7 @@ extension TaskListViewController {
 // MARK: - UITableViewDelegate
 extension TaskListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        showAlert(withTitle: "Update Task", andMessage: "What yo want to do?", forSelectedTaskAt: indexPath)
+        showAlert(for: taskList[indexPath.row])
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {

@@ -68,4 +68,31 @@ final class StorageManager {
         saveContext()
     }
     
+    func move(_ task: Task, from sourceIndex: Int, to destinationIndex: Int) {
+        var taskList: [Task] = []
+        
+        fetchData() { result in
+            switch result {
+            case .success(let data):
+                taskList = data
+            case .failure(let error):
+                print(error)
+            }
+        }
+        
+        task.index = Int64(destinationIndex)
+        
+        if sourceIndex > destinationIndex {
+            for index in destinationIndex..<sourceIndex {
+                taskList[index].index += 1
+            }
+        } else if destinationIndex > sourceIndex {
+            for index in sourceIndex+1...destinationIndex {
+                taskList[index].index -= 1
+            }
+        }
+        
+        saveContext()
+    }
+    
 }

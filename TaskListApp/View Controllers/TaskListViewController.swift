@@ -71,49 +71,6 @@ final class TaskListViewController: UITableViewController {
             with: .automatic
         )
     }
-    
-    private func showAlert(for task: Task? = nil) {
-        let alert: UIAlertController!
-        let saveAction: UIAlertAction!
-        
-        guard let task else {
-            alert = UIAlertController(title: "Create Task", message: "What would you like to do?", preferredStyle: .alert)
-            saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
-                guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-                save(taskName, at: taskList.count)
-            }
-            
-            let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
-            
-            alert.addAction(saveAction)
-            alert.addAction(cancelAction)
-            
-            alert.addTextField { textField in
-                textField.placeholder = "New Task"
-            }
-            
-            present(alert, animated: true)
-            
-            return
-        }
-        
-        alert = UIAlertController(title: "Edit Task", message: "What do you want to do?", preferredStyle: .alert)
-        saveAction = UIAlertAction(title: "Save Changes", style: .default) { [unowned self] _ in
-            guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-            update(task, with: taskName)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
-        
-        alert.addAction(saveAction)
-        alert.addAction(cancelAction)
-        
-        alert.addTextField { textField in
-            textField.text = task.title
-        }
-        
-        present(alert, animated: true)
-    }
 }
 
 // MARK: - UITableViewDataSource
@@ -136,7 +93,10 @@ extension TaskListViewController {
 // MARK: - UITableViewDelegate
 extension TaskListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        showAlert(for: taskList[indexPath.row])
+        let task = taskList[indexPath.row]
+        showAlert(for: task) {
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -177,3 +137,23 @@ private extension TaskListViewController {
     }
 }
 
+// MARK: - Alert Controller
+extension TaskListViewController {
+    
+    private func showAlert(for task: Task? = nil, completion: (() -> Void)? = nil) {
+        let alertFactory = AlertControllerFactory(
+            userAction: task != nil ? .editTask : .newTask,
+            taskTitle: task?.title)
+        let alert = alertFactory.createAlert { [weak self] title in
+            if let task, let completion {
+                self?.storageManager.update(task, with: title)
+                completion()
+                return
+            }
+            
+            self?.save(title, at: self?.taskList.count ?? 0)
+        }
+        
+        present(alert, animated: true)
+    }
+}
